@@ -1,1 +1,4 @@
 # Documentation for image processing 
+#
+# Objective:
+# Takes any image and standarizes to specialized resolution and outputs file.
