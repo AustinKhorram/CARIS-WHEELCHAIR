@@ -1,0 +1,12 @@
+#!/Library/Frameworks/Python.framework/Versions/3.7/bin/python3
+
+# File types: PNG, JPG, BMP, TIF
+
+# Libraries
+from PIL import Image
+
+# Parameters
+resolution = 128, 128
+
+test_img = Image.open("/ENPH-459/CARIS-WHEELCHAIR/Image Processing/test-images/pool.png")
+test_img.resize(resolution).show()
