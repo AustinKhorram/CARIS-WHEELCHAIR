@@ -15,7 +15,7 @@ in_data = wav_file.readframes(n_samp)
 wav_file.close()
 
 # Process and FFT it
-data = np.array(struct.unpack('{n}h'.format(n=n_samp*2), in_data))
+data = np.array(struct.unpack('{n}h'.format(n=n_samp*2), in_data)) # Why 2?
 data_fft = np.abs(np.fft.fft(data)) # abs() converts complex to real valued
 
 # Plot it
