@@ -6,6 +6,7 @@
 
 # Libraries
 from PIL import Image
+import PIL.ExifTags
 import os
 
 # Parameters
