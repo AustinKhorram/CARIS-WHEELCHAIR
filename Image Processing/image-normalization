@@ -1,12 +1,18 @@
 #!/Library/Frameworks/Python.framework/Versions/3.7/bin/python3
 
+# Notes:
 # File types: PNG, JPG, BMP, TIF
+# DO NOT change any folder structure in the "Image Processing" folder
 
 # Libraries
 from PIL import Image
+import os
 
 # Parameters
-resolution = 128, 128
+resolution = 256, 256
+file_path = os.path.realpath(__file__ + "/../" + "/test-images/")
+picture_name = "pool.png"
+print(file_path) # testprint
 
-test_img = Image.open("/ENPH-459/CARIS-WHEELCHAIR/Image Processing/test-images/pool.png")
-test_img.resize(resolution).show()
+test_img = Image.open(file_path + "/" + picture_name)
+test_img.resize(resolution).rotate(0).show()
