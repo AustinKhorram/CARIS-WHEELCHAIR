@@ -5,7 +5,7 @@ img = read_img_file('blurry_images/blurry_1.jpg') # 2 kinds of filter
 wiener_img = deblur_wiener(img)
 richardson_lucy_img = deblur_lucy(img)
 
-fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(8, 5)) # Plot comparision
+fig, ax = plt.subplots(nrows=1, ncols=3) # Plot comparision
 plt.gray()
 
 ax[0].imshow(img)

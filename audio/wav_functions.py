@@ -1,7 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import wave
 import struct
+import normalized_fft
 
 # Return the FFT of a .wav file with amplitudes scaled such that the max is one
 def get_freq(in_file):
@@ -14,10 +14,7 @@ def get_freq(in_file):
     wav_file.close()
 
     data = np.array(struct.unpack('{n}h'.format(n=n_frames*n_chan), in_data))
-    data_fft = np.abs(np.fft.fft(data)) # abs() converts complex to real valued
-
-    max_amp = np.amax(data_fft)
-    data_fft = np.multiply(data_fft, 1.0/max_amp)
+    data_fft = normalized_fft.normalized_fft(data)
 
     return data_fft
 
