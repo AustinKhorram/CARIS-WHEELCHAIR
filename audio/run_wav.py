@@ -22,23 +22,23 @@ fig_f, ax = plt.subplots(nrows=2, ncols=2)
 
 ax[0][0].plot(gravel_data, label="Mean A = %s" % gravel_mean)
 ax[0][0].legend()
-ax[0][0].set_xlabel("t")
+ax[0][0].set_xlabel("t [ms]")
 ax[0][0].set_ylabel("A")
 ax[0][0].set_title("Audio \"%s\"" % gravel_file)
 
 ax[0][1].plot(pavement_data, label="Mean A = %s" % pavement_mean)
 ax[0][1].legend()
-ax[0][1].set_xlabel("t")
+ax[0][1].set_xlabel("t [ms]")
 ax[0][1].set_ylabel("A")
 ax[0][1].set_title("Audio \"%s\"" % pavement_file)
 
 ax[1][0].plot(gravel_fft)
-ax[1][0].set_xlabel("f")
+ax[1][0].set_xlabel("f [Hz]")
 ax[1][0].set_ylabel("A")
 ax[1][0].set_title("Normalized FFT of \"%s\"" % gravel_file)
 
 ax[1][1].plot(pavement_fft)
-ax[1][1].set_xlabel("f")
+ax[1][1].set_xlabel("f [Hz]")
 ax[1][1].set_ylabel("A")
 ax[1][1].set_title("Normalized FFT of \"%s\"" % pavement_file)
 

@@ -26,6 +26,7 @@ def normalized_fft(data=[]):
 
 def average_amp(data=[]):
 # TODO: Implement a threshold to filter out bckgrnd sound
+    return
 
 # Write a signal of specified frequency to a .wav file, with other audio
 # paramaters specified
