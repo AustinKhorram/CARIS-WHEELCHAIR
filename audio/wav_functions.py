@@ -1,25 +1,32 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import wave
 import struct
 
-# Return the FFT of a .wav file with amplitudes scaled such that the max is one
-def get_freq(in_file):
+# Returns an array of data from a wav file
+def get_array(in_file):
     wav_file = wave.open(in_file, 'r')
-
+    
     n_chan = wav_file.getnchannels() # Have to double number of reads if stereo
     n_frames = wav_file.getnframes(); # Entire number of frames in the file
     in_data = wav_file.readframes(n_frames)
-
+    
     wav_file.close()
-
+    
     data = np.array(struct.unpack('{n}h'.format(n=n_frames*n_chan), in_data))
-    data_fft = np.abs(np.fft.fft(data)) # abs() converts complex to real valued
+    return data
 
-    max_amp = np.amax(data_fft)
-    data_fft = np.multiply(data_fft, 1.0/max_amp)
+# Returns a fft of the input data with max amplitude = 1
+def normalized_fft(data=[]):
+    data_fft = np.abs(np.fft.rfft(data, 70000)) # abs() converts complex to real valued
 
-    return data_fft
+    max_amp = np.amax(data_fft) # Normalize by max amplitude
+    data_fft_norm = np.multiply(data_fft, 1.0/max_amp)
+
+    return data_fft_norm
+
+def average_amp(data=[]):
+# TODO: Implement a threshold to filter out bckgrnd sound
+    return
 
 # Write a signal of specified frequency to a .wav file, with other audio
 # paramaters specified
