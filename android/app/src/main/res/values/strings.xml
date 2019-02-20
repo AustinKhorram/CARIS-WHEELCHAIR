@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">caris-wheelchair</string>
+    <string name="app_name">Caris Wheelchair</string>
+    <string name="user_edit_message">User</string>
+    <string name="microphone_button_tex">Microphone</string>
+    <string name="camera_button_text">Camera</string>
+    <string name="imu_button_text">IMU</string>
+    <string name="user_edit_message_hint">Enter a username</string>
+    <string name="send_button_text">Send</string>
+    <string name="default_message">Hello world!</string>
 </resources>
