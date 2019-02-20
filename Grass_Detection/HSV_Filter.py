@@ -4,7 +4,8 @@ import numpy as np
 from math import atan2, cos, sin, sqrt, pi
 from matplotlib import pyplot as plt
 
-SOURCE_DIR = "grass_images"
+SOURCE_DIR = "newImages"
+#SOURCE_DIR = "ideal"
 
 # HSV has limits H: 0 - 180 
 #                S: 0 - 255
@@ -12,6 +13,8 @@ SOURCE_DIR = "grass_images"
 GREEN_MIN = np.array([21, 80,  80], np.uint8)
 GREEN_MAX = np.array([53, 255, 255], np.uint8)
 SATURATION_FACTOR = 1.1
+
+resolution = 504, 378
 
 def showGradient (orig, lap, sobx, soby):
 	plt.subplot(2,2,1),plt.imshow(orig, cmap = 'gray')
@@ -87,29 +90,51 @@ def processImages(directory):
 			# the colored components
 			hsv_img[:,:,1] = hsv_img[:,:,1] * SATURATION_FACTOR
 
-		 	# Now apply a bitmask to the image by blacking out those
+		 	# Now appl = cv2.findContours(frame_threshed, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+			# for i, c in eny a bitmask to the image by blacking out those
 		 	# pixels which do not meet the minimum HSV standards for 
 		 	# green and grab the binary output
 			frame_threshed = cv2.inRange(hsv_img, GREEN_MIN, GREEN_MAX)
 
+			noOfContours = 0
+			mask = np.zeros(img.shape, dtype=np.uint8)
+			print(img.shape)
+			contours, temp = cv2.findContours(frame_threshed, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+			for i, c in enumerate(contours):
+				area = cv2.contourArea(c)
+				if area < 3e2:
+					continue
+				
+				noOfContours +=1
+				cv2.drawContours(img, contours, i, (0, 0, 255), 2)
+				cv2.drawContours(mask, contours, i, (255, 255, 255), -1)
+			
+			mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
 			# Identify regions of interest and calculate the subimage's 
-			# gradient
-			gray_threshed = cv2.bitwise_and(gray, gray, mask = frame_threshed)
+			gray_threshed = cv2.bitwise_and(gray, gray, mask = mask)
 			laplacian = cv2.Laplacian(gray_threshed, cv2.CV_64F)
 			sobelx = cv2.Sobel(gray_threshed, cv2.CV_64F, 1, 0, ksize=5)
 			sobely = cv2.Sobel(gray_threshed, cv2.CV_64F, 0, 1, ksize=5)
+
+			# Show the four images
+			#showGradient(gray_threshed, laplacian, sobelx, sobely)
 
 			# Analyze the images for some directional or chaotic component:
 			# grass patches viewed from above or close are never smooth
 			# and always evince some texture
 			mean = np.empty((0))
-			meanLap, eigVecLap   = cv2.PCACompute(laplacian, mean)
-			meanSobx, eigVecSobx = cv2.PCACompute(sobelx, mean)
-			meanSoby, eigVecSoby = cv2.PCACompute(sobely, mean)
+			meanLap, eigVecLap, eigValLap    = cv2.PCACompute2(laplacian, mean)
+			meanSobx, eigVecSobx, eigValSobx = cv2.PCACompute2(sobelx, mean)
+			meanSoby, eigVecSoby, eigValSoby = cv2.PCACompute2(sobely, mean)
 			
-			print (np.linalg.norm(eigVecLap))
-			print (np.linalg.norm(eigVecSobx))
-			print (np.linalg.norm(eigVecSoby))
+			print(eigVecLap.shape)
+			#print (np.linalg.norm(eigVecLap[0]*eigValLap[0]))
+			#print (np.linalg.norm(eigVecLap[1]*eigValLap[1]))
+			#print (np.linalg.norm(eigVecSobx[0]*eigValSobx[0]))
+			#print (np.linalg.norm(eigVecSobx[1]*eigValSobx[1]))
+			#print (np.linalg.norm(eigVecSoby[0]*eigValSoby[0]))
+			#print (np.linalg.norm(eigVecSoby[1]*eigValSoby[1]))
 			# Save the images 
 			#cv2.imwrite(location + "_output_thresh.jpg", frame_threshed)
 			#cv2.imwrite(location + "_contours.jpg", img)
