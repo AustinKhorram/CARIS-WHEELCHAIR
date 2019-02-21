@@ -15,12 +15,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    /**Called when user sends the send button on the username field**/
-    public void sendUser(View view) {
+    /**Called when user taps the Send button on the username field**/
+    public void sendMessage(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
-        EditText editText =  findViewById(R.id.editText);
+        EditText editText = (EditText) findViewById(R.id.editText);
         String user = editText.getText().toString();
         intent.putExtra(EXTRA_MESSAGE, user);
         startActivity(intent);
+
     }
 }
