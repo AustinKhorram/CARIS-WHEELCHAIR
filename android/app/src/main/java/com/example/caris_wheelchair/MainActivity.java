@@ -38,4 +38,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
 
     }
+
+    /**Called when user taps the Send button on the username field**/
+    public void useCamera(View view) {
+        Intent intent = new Intent(this, CameraCapture.class);
+        startActivity(intent);
+    }
 }
