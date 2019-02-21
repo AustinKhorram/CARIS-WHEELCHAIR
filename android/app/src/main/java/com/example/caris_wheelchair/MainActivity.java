@@ -22,6 +22,11 @@ public class MainActivity extends AppCompatActivity {
         String user = editText.getText().toString();
         intent.putExtra(EXTRA_MESSAGE, user);
         startActivity(intent);
-
     }
+    /**called when user taps "IMU" button on main activity**/
+    public void startIMU(View view){
+        Intent intent = new Intent(MainActivity.this, IMU_data_collection.class);
+        startActivity(intent);
+    }
+
 }
