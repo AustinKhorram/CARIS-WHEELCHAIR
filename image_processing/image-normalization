@@ -1,13 +1,12 @@
 #!/Library/Frameworks/Python.framework/Versions/3.7/bin/python3
 
-# Notes:
-# File types: PNG, JPG, BMP, TIF
+# NOTES:
 # DO NOT change any folder structure in the "Image Processing" folder
+# TESTED WITH: PNG, JPG, BMP
 
 # Libraries
 from PIL import Image, ExifTags
 import os, traceback
-
 
 # Parameters
 resolution = 256, 256
