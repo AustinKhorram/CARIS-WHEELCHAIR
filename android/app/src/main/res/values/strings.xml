@@ -8,4 +8,5 @@
     <string name="send_button_text">Send</string>
     <string name="default_message">Hello world!</string>
     <string name="title_activity_camera">CameraActivity</string>
+    <string name="take_photo_text">Photo</string>
 </resources>

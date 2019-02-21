@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CameraCapture extends AppCompatActivity implements TextureView.SurfaceTextureListener{
+public class CameraCapture extends AppCompatActivity{
     private static final String TAG = "CameraCapture";
     private Button takePictureButton;
     private TextureView textureView;
@@ -73,14 +73,11 @@ public class CameraCapture extends AppCompatActivity implements TextureView.Surf
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        textureView = new TextureView(this);
+        setContentView(R.layout.activity_camera_capture);
+        textureView = (TextureView) findViewById(R.id.camPreview);
         assert textureView != null;
-        textureView.setSurfaceTextureListener(this);
-
-        /* TODO: Delete */
-        takePictureButton = (Button) findViewById(R.id.button);
+        textureView.setSurfaceTextureListener(textureListener);
+        takePictureButton = (Button) findViewById(R.id.Photo);
         assert takePictureButton != null;
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,20 +87,24 @@ public class CameraCapture extends AppCompatActivity implements TextureView.Surf
         });
     }
 
-    /** Function relevant to creating a camera preview **/
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        //open your camera here
-        openCamera();
-    }
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        // Transform you image captured size according to the surface width and height
-    }
-
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        return false;
-    }
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
+    TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            //open your camera here
+            openCamera();
+        }
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+            // Transform you image captured size according to the surface width and height
+        }
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            return false;
+        }
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        }
+    };
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
@@ -147,11 +148,13 @@ public class CameraCapture extends AppCompatActivity implements TextureView.Surf
             e.printStackTrace();
         }
     }
+
     protected void takePicture() {
         if(null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
             return;
         }
+
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
@@ -184,7 +187,7 @@ public class CameraCapture extends AppCompatActivity implements TextureView.Surf
                         image = reader.acquireLatestImage();
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
-                        buffer.get(bytes);
+                        buffer.get(bytes);640
                         save(bytes);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -321,7 +324,7 @@ public class CameraCapture extends AppCompatActivity implements TextureView.Surf
         if (textureView.isAvailable()) {
             openCamera();
         } else {
-            textureView.setSurfaceTextureListener(this);
+            textureView.setSurfaceTextureListener(textureListener);
         }
     }
     @Override
