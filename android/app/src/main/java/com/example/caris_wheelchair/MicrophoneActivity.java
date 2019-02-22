@@ -50,6 +50,7 @@ public class MicrophoneActivity extends AppCompatActivity {
     }
 
 
+    /** Occurs when Record button pressed On/Off **/
     public void onRecord(View view) {
         TextView textView = findViewById(R.id.button_record);
         if (isRecording) {
@@ -62,6 +63,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         isRecording = !isRecording;
     }
 
+    /** Occurs when Play button pressed On/Off **/
     public void onPlay(View view) {
         TextView textView = findViewById(R.id.button_play);
         if (isPlaying) {
@@ -74,6 +76,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         isPlaying = !isPlaying;
     }
 
+    /** Helper method to create a MediaRecorder object and start it **/
     private void startRecording() {
         recorder = new MediaRecorder(); //TODO: Optimize encoding and sampling rate
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -91,6 +94,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         }
     }
 
+    /** Helper method to end and close MediaRecorder **/
     private void stopRecording() {
         if (recorder != null) {
             recorder.stop();
@@ -119,6 +123,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         }
     }
 
+    /** Helper method to create a MediaPlayer Object and start it **/
     private void startPlaying() {
         player = new MediaPlayer();
         try {
@@ -130,6 +135,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         }
     }
 
+    /** Helper method to close a MediaPlayer Object **/
     private void stopPlaying() {
         if (player != null) {
             player.release();
