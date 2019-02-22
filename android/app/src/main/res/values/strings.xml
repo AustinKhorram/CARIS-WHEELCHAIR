@@ -19,4 +19,5 @@
     <string name="sd_card_text">SD Card Available</string>
     <string name="text_no">No</string>
     <string name="text_yes">Yes</string>
+    <string name="app_dir">com.example.caris_wheelchair</string>
 </resources>

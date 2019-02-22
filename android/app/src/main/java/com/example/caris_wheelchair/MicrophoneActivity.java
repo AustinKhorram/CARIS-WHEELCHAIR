@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -143,6 +145,27 @@ public class MicrophoneActivity extends AppCompatActivity {
         }
     }
 
+    /** Checks if external storage is available for read and write **/
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Gets a File representing the appropriate directory on the external storage**/
+    public File getPublicAlbumStorageDir(String albumName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MUSIC), albumName);
+        if (!file.mkdirs()) {
+            Log.e(LOG_TAG, "Directory not created");
+        }
+        return file;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,7 +175,7 @@ public class MicrophoneActivity extends AppCompatActivity {
 
         //TODO: Configure to save to an SD card
         DateFormat dateFormatDisplay = new SimpleDateFormat(getString(R.string.date_display_format));
-        DateFormat dateFormatSave = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        DateFormat dateFormatSave = new SimpleDateFormat(getString(R.string.date_save_format));
         Date date = new Date();
         String dateDisplayed = dateFormatDisplay.format(date);
         String dateSaved = dateFormatSave.format(date);
@@ -160,11 +183,21 @@ public class MicrophoneActivity extends AppCompatActivity {
         TextView textView_time = findViewById(R.id.textView_time);
         textView_time.setText(dateDisplayed);
 
-        // Record to external cache directory
-        try {
-            fileName = getExternalCacheDir().getAbsolutePath();
-        } catch (NullPointerException e) {
-            Log.e(LOG_TAG, "Could not get external cache directory");
+        TextView textView_sdCardYesNo = findViewById(R.id.textView_sdCardYesNo);
+        if (isExternalStorageWritable()) {
+            textView_sdCardYesNo.setText(R.string.text_yes);
+            try {
+                fileName = getPublicAlbumStorageDir("CARIS").getAbsolutePath();
+            } catch (NullPointerException e) {
+                Log.e(LOG_TAG, "Could not get SD card directory");
+            }
+        } else { // Record to external cache directory by default
+            textView_sdCardYesNo.setText(R.string.text_no);
+            try {
+                fileName = getExternalCacheDir().getAbsolutePath();
+            } catch (NullPointerException e) {
+                Log.e(LOG_TAG, "Could not get external cache directory");
+            }
         }
         fileName += "/" + dateSaved + ".3gp";
     }
