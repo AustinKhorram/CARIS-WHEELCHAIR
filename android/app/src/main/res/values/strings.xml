@@ -8,4 +8,12 @@
     <string name="send_button_text">Send</string>
     <string name="default_message">Hello world!</string>
     <string name="title_activity_camera">CameraActivity</string>
+    <string name="record_text">Record</string>
+    <string name="play_text">Play</string>
+    <string name="stop_text">Stop</string>
+    <string name="timestamp_text">Timestamp</string>
+    <string name="length_tex">Audio Length</string>
+    <string name="default_length_text">00:00</string>
+    <string name="date_display_format">yyyy-MM-dd HH:mm:ss</string>
+    <string name="date_save_format">yyyy-MM-dd_HH-mm-ss</string>
 </resources>
