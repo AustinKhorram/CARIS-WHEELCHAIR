@@ -8,6 +8,7 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,7 +20,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 public class MicrophoneActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MicrophoneActivity";
@@ -157,14 +157,16 @@ public class MicrophoneActivity extends AppCompatActivity {
     /** Gets a File representing the appropriate directory on the external storage**/
     public File getPublicAlbumStorageDir(String albumName) {
         // Get the directory for the user's public pictures directory.
-        File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_MUSIC), albumName);
-        if (!file.mkdirs()) {
+        File[] files = ContextCompat.getExternalFilesDirs(getApplicationContext(), albumName);
+        if (!files[0].mkdirs()) {
             Log.e(LOG_TAG, "Directory not created");
         }
-        return file;
-    }
+        if (files.length == 1)
+            return files[0];
+        else
+            return files[1];
 
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,3 +218,5 @@ public class MicrophoneActivity extends AppCompatActivity {
         }
     }
 }
+
+//TODO: Enable pausing of recording
