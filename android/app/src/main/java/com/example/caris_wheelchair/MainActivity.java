@@ -44,4 +44,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CameraCapture.class);
         startActivity(intent);
     }
+
+    /** Called when the user taps the Microphone button**/
+    public void openMicrophone(View view) {
+        Intent intent = new Intent(this, MicrophoneActivity.class);
+        startActivity(intent);
+    }
 }
