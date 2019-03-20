@@ -21,6 +21,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+//TODO: Enable pausing of recording
+
 public class MicrophoneActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MicrophoneActivity";
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -45,7 +47,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_RECORD_AUDIO_PERMISSION:
-                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                permissionToRecordAccepted = (grantResults[0] == PackageManager.PERMISSION_GRANTED);
                 break;
         }
         if (! permissionToRecordAccepted) finish();
@@ -80,49 +82,41 @@ public class MicrophoneActivity extends AppCompatActivity {
 
     /** Helper method to create a MediaRecorder object and start it **/
     private void startRecording() {
-        recorder = new MediaRecorder(); //TODO: Optimize encoding and sampling rate
-        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP); // Standard for phone audio
-        recorder.setOutputFile(fileName);
-        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        recorder.setAudioSamplingRate(AUDIO_SAMP_RATE);
-        recorder.setAudioEncodingBitRate(AUDIO_BIT_RATE);
-
         try {
-            recorder.prepare();
             recorder.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Recorder prepare() failed");
+        } catch (NullPointerException e) {
+            Log.e(LOG_TAG, "MediaRecorder is null");
         }
     }
 
     /** Helper method to end and close MediaRecorder **/
     private void stopRecording() {
-        if (recorder != null) {
+        try {
             recorder.stop();
             recorder.release();
-
-            // Retrieve metadata about the recorded file
-            MediaMetadataRetriever mmdr = new MediaMetadataRetriever();
-            mmdr.setDataSource(fileName);
-            String duration =
-                    mmdr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long dur = Long.parseLong(duration);
-            String seconds = String.valueOf((dur % 60000) / 1000);
-            String minutes = String.valueOf(dur / 60000);
-            String audio_length_str = "";
-
-            if (seconds.length() == 1) {
-                audio_length_str = "0" + minutes + ":0" + seconds;
-            } else {
-                audio_length_str = "0" + minutes + ":" + seconds;
-            }
-
-            TextView textView_time = findViewById(R.id.textView_timeAudio);
-            textView_time.setText(audio_length_str);
-
-            recorder = null;
+        } catch (NullPointerException e) {
+            Log.e(LOG_TAG, "MediaRecorder is null");
         }
+        // Retrieve metadata about the recorded file
+        MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+        metadataRetriever.setDataSource(fileName);
+        String duration =
+                metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        long dur = Long.parseLong(duration);
+        String seconds = String.valueOf((dur % 60000) / 1000);
+        String minutes = String.valueOf(dur / 60000);
+        String audio_length_str = "";
+
+        if (seconds.length() == 1) {
+            audio_length_str = "0" + minutes + ":0" + seconds;
+        } else {
+            audio_length_str = "0" + minutes + ":" + seconds;
+        }
+
+        TextView textView_time = findViewById(R.id.textView_timeAudio);
+        textView_time.setText(audio_length_str);
+
+        recorder = null;
     }
 
     /** Helper method to create a MediaPlayer Object and start it **/
@@ -175,7 +169,6 @@ public class MicrophoneActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
-        //TODO: Configure to save to an SD card
         DateFormat dateFormatDisplay = new SimpleDateFormat(getString(R.string.date_display_format));
         DateFormat dateFormatSave = new SimpleDateFormat(getString(R.string.date_save_format));
         Date date = new Date();
@@ -185,23 +178,43 @@ public class MicrophoneActivity extends AppCompatActivity {
         TextView textView_time = findViewById(R.id.textView_time);
         textView_time.setText(dateDisplayed);
 
-        TextView textView_sdCardYesNo = findViewById(R.id.textView_sdCardYesNo);
+        /* Check if sd card is writeable, and retrieve available space */
+        TextView textView_sdCardSpace = findViewById(R.id.textView_sdCardSpace) ;
+        File saveFile = null;
         if (isExternalStorageWritable()) {
-            textView_sdCardYesNo.setText(R.string.text_yes);
             try {
-                fileName = getPublicAlbumStorageDir("CARIS").getAbsolutePath();
+                saveFile = getPublicAlbumStorageDir("audio");
             } catch (NullPointerException e) {
                 Log.e(LOG_TAG, "Could not get SD card directory");
             }
         } else { // Record to external cache directory by default
-            textView_sdCardYesNo.setText(R.string.text_no);
             try {
-                fileName = getExternalCacheDir().getAbsolutePath();
+                saveFile = getExternalCacheDir();
             } catch (NullPointerException e) {
                 Log.e(LOG_TAG, "Could not get external cache directory");
             }
         }
-        fileName += "/" + dateSaved + ".3gp";
+        fileName = saveFile.getAbsolutePath();
+        fileName += "/" + dateSaved + ".3gp"; // Filename of output
+
+        String availableSpace = String.valueOf(saveFile.getFreeSpace() / 1024.0 / 1024.0) ;
+        availableSpace += " MB";
+        textView_sdCardSpace.setText(availableSpace);
+
+        /* Create media recorder object */
+        recorder = new MediaRecorder(); //TODO: Optimize encoding, sampling rate, file format
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP); // Standard for phone audio
+        recorder.setOutputFile(fileName);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder.setAudioSamplingRate(AUDIO_SAMP_RATE);
+        recorder.setAudioEncodingBitRate(AUDIO_BIT_RATE);
+
+        try {
+            recorder.prepare();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Recorder prepare() failed");
+        }
     }
 
     @Override
@@ -218,5 +231,3 @@ public class MicrophoneActivity extends AppCompatActivity {
         }
     }
 }
-
-//TODO: Enable pausing of recording
