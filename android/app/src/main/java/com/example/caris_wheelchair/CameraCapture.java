@@ -26,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -37,9 +38,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class CameraCapture extends AppCompatActivity{
     private static final String TAG = "CameraCapture";
@@ -66,9 +72,26 @@ public class CameraCapture extends AppCompatActivity{
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
+    private DateFormat dateFormat;
 
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
+
+    public class RecordingTimerTask extends TimerTask
+    {
+        @Override
+        public void run() {
+            takePicture();
+        }
+    }
+
+    private Timer recordingTimer;
+    private RecordingTimerTask recordingTask;
+
+    private final long recordingPeriod = 1500;
+    protected boolean isRecording = false;
+    private final int img_width = 768;
+    private final int img_height = 1024;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,10 +102,18 @@ public class CameraCapture extends AppCompatActivity{
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = (Button) findViewById(R.id.Photo);
         assert takePictureButton != null;
+        dateFormat = new SimpleDateFormat(getString(R.string.date_save_format));
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePicture();
+                if (isRecording) {
+                    stopRecording();
+                    isRecording = false;
+                }
+                else {
+                    startRecording();
+                    isRecording = true;
+                }
             }
         });
     }
@@ -129,7 +160,6 @@ public class CameraCapture extends AppCompatActivity{
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
-            Toast.makeText(CameraCapture.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
             createCameraPreview();
         }
     };
@@ -146,39 +176,46 @@ public class CameraCapture extends AppCompatActivity{
             mBackgroundHandler = null;
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
 
-    protected void takePicture() {
-        if(null == cameraDevice) {
+    protected boolean takePicture() {
+        if (null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
-            return;
+            return false;
         }
 
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
-            Size[] jpegSizes = null;
-            if (characteristics != null) {
-                jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
-            }
-            int width = 640;
-            int height = 480;
-            if (jpegSizes != null && 0 < jpegSizes.length) {
-                width = jpegSizes[0].getWidth();
-                height = jpegSizes[0].getHeight();
-            }
-            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
+            /* Could uncomment to get native resolution of the camera*/
+            //CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
+            //Size[] jpegSizes = null;
+            //if (characteristics != null) {
+            //    jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
+            //}
+            //if (jpegSizes != null && 0 < jpegSizes.length) {
+            //    width = jpegSizes[0].getWidth();
+            //    height = jpegSizes[0].getHeight();
+            //}
+            ImageReader reader = ImageReader.newInstance(img_width, img_height, ImageFormat.JPEG, 1);
             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(reader.getSurface());
-            outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
+            Surface currentSurface = reader.getSurface();
+            assert currentSurface != null;
+            outputSurfaces.add(currentSurface);
+            SurfaceTexture currentSurfaceTexture = textureView.getSurfaceTexture();
+            assert currentSurfaceTexture != null;
+            outputSurfaces.add(new Surface(currentSurfaceTexture));
             final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             // Orientation
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-            final File file = new File(Environment.getExternalStorageDirectory()+"/pic.jpg");
+            Date date = new Date();
+            String dateSaved = dateFormat.format(date);
+            final File file = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+dateSaved+".jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -187,7 +224,7 @@ public class CameraCapture extends AppCompatActivity{
                         image = reader.acquireLatestImage();
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
-                        buffer.get(bytes);640
+                        buffer.get(bytes);
                         save(bytes);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -216,7 +253,10 @@ public class CameraCapture extends AppCompatActivity{
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Toast.makeText(CameraCapture.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(CameraCapture.this, "Saved:" + file, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 200);
+                    toast.setDuration(Toast.LENGTH_SHORT);
+                    toast.show();
                     createCameraPreview();
                 }
             };
@@ -227,6 +267,8 @@ public class CameraCapture extends AppCompatActivity{
                         session.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
                     } catch (CameraAccessException e) {
                         e.printStackTrace();
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
                     }
                 }
                 @Override
@@ -235,8 +277,12 @@ public class CameraCapture extends AppCompatActivity{
             }, mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
+        return true;
     }
+
     protected void createCameraPreview() {
         try {
             SurfaceTexture texture = textureView.getSurfaceTexture();
@@ -263,6 +309,8 @@ public class CameraCapture extends AppCompatActivity{
             }, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
     private void openCamera() {
@@ -282,11 +330,13 @@ public class CameraCapture extends AppCompatActivity{
             manager.openCamera(cameraId, stateCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
         Log.e(TAG, "openCamera X");
     }
     protected void updatePreview() {
-        if(null == cameraDevice) {
+        if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
@@ -294,8 +344,11 @@ public class CameraCapture extends AppCompatActivity{
             cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
+
     private void closeCamera() {
         if (null != cameraDevice) {
             cameraDevice.close();
@@ -306,6 +359,22 @@ public class CameraCapture extends AppCompatActivity{
             imageReader = null;
         }
     }
+
+    private void startRecording() {
+        recordingTask = new RecordingTimerTask();
+        recordingTimer = new Timer();
+        recordingTimer.scheduleAtFixedRate(recordingTask, 0, recordingPeriod);
+    }
+
+    private void stopRecording() {
+        if (null != recordingTimer) {
+            recordingTimer.cancel();
+            recordingTimer.purge();
+            recordingTimer = null;
+            recordingTask = null;
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
@@ -330,8 +399,9 @@ public class CameraCapture extends AppCompatActivity{
     @Override
     protected void onPause() {
         Log.e(TAG, "onPause");
-        //closeCamera();
+        closeCamera();
         stopBackgroundThread();
+        stopRecording();
         super.onPause();
     }
 }
