@@ -97,10 +97,10 @@ public class CameraCapture extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_capture);
-        textureView = (TextureView) findViewById(R.id.camPreview);
+        textureView = findViewById(R.id.camPreview);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
-        takePictureButton = (Button) findViewById(R.id.Photo);
+        takePictureButton = findViewById(R.id.Photo);
         assert takePictureButton != null;
         dateFormat = new SimpleDateFormat(getString(R.string.date_save_format));
         takePictureButton.setOnClickListener(new View.OnClickListener() {
@@ -289,6 +289,7 @@ public class CameraCapture extends AppCompatActivity{
             assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface surface = new Surface(texture);
+            assert surface != null;
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
             cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback(){
@@ -313,7 +314,7 @@ public class CameraCapture extends AppCompatActivity{
             e.printStackTrace();
         }
     }
-    private void openCamera() {
+    protected void openCamera() {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "camera is open");
         try {
@@ -349,7 +350,7 @@ public class CameraCapture extends AppCompatActivity{
         }
     }
 
-    private void closeCamera() {
+    protected void closeCamera() {
         if (null != cameraDevice) {
             cameraDevice.close();
             cameraDevice = null;
@@ -360,18 +361,26 @@ public class CameraCapture extends AppCompatActivity{
         }
     }
 
-    private void startRecording() {
-        recordingTask = new RecordingTimerTask();
-        recordingTimer = new Timer();
-        recordingTimer.scheduleAtFixedRate(recordingTask, 0, recordingPeriod);
+    protected void startRecording() {
+        try {
+            recordingTask = new RecordingTimerTask();
+            recordingTimer = new Timer();
+            recordingTimer.scheduleAtFixedRate(recordingTask, 0, recordingPeriod);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void stopRecording() {
+    protected void stopRecording() {
         if (null != recordingTimer) {
-            recordingTimer.cancel();
-            recordingTimer.purge();
-            recordingTimer = null;
-            recordingTask = null;
+            try {
+                recordingTimer.cancel();
+                recordingTimer.purge();
+                recordingTimer = null;
+                recordingTask = null;
+            } catch(IllegalArgumentException e ) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -385,6 +394,7 @@ public class CameraCapture extends AppCompatActivity{
             }
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -401,7 +411,6 @@ public class CameraCapture extends AppCompatActivity{
         Log.e(TAG, "onPause");
         closeCamera();
         stopBackgroundThread();
-        stopRecording();
         super.onPause();
     }
 }
