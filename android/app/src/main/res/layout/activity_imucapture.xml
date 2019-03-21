@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".IMUCapture">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <Switch
+                android:id="@+id/imu_data_collection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginRight="4dp"
+                android:layout_marginLeft="4dp"
+                android:switchMinWidth="48dp"
+                android:switchPadding="16dp"
+                android:text="IMU Data Collection"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:checked="true"/>
+
+        </android.support.v7.widget.Toolbar>
+
+        <RelativeLayout
+            android:id="@+id/relativeLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/toolbar">
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="4dp"
+                android:layout_marginLeft="16dp"
+                android:inputType="text"
+                android:textStyle="bold"
+                android:text="How to Use: "
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/textView1"
+                android:layout_marginTop="0dp"
+                android:inputType="textMultiLine"
+                android:layout_marginLeft="32dp"
+                android:layout_marginRight="32dp"
+                android:text="@string/IMU_instruction_2"
+                android:textSize="14sp"/>
+
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/newBatch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/relativeLayout2"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="32dp"
+            android:text="New Batch"
+            android:textStyle="bold"
+            android:onClick="newBatchTest"/>
+
+        <Button
+            android:id="@+id/queryFreeSpace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/newBatch"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="32dp"
+            android:text="Available Storage?"
+            android:textStyle="bold"
+            android:onClick="queryFreeSpace"/>
+
+    </RelativeLayout>
+
+
+
+</android.support.design.widget.CoordinatorLayout>

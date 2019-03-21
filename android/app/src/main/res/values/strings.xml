@@ -9,4 +9,6 @@
     <string name="default_message">Hello world!</string>
     <string name="title_activity_camera">CameraActivity</string>
     <string name="title_activity_imu_data_collection">IMU_data_collection</string>
+    <string name="IMU_instruction_2">1. Toggle \'<i>IMU Data Collection</i>\' switch to enable/disable data collection for a single batch \n2. Click the \'<i>New Batch</i>\' button to save the current data batch and start collecting a new batch</string>
+
 </resources>

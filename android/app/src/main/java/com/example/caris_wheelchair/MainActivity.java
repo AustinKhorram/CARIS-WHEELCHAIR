@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     }
     /**called when user taps "IMU" button on main activity**/
     public void startIMU(View view){
-        Intent intent = new Intent(MainActivity.this, IMU_data_collection.class);
+        Intent intent = new Intent(MainActivity.this, IMUCapture.class);
         startActivity(intent);
     }
 
