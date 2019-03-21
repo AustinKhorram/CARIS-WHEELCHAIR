@@ -1,8 +1,13 @@
 package com.example.caris_wheelchair;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.hardware.SensorEventListener;
@@ -29,8 +34,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.FileWriter;
 
 public class IMUCapture extends AppCompatActivity implements SensorEventListener, CompoundButton.OnCheckedChangeListener {
+    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
+
     // required for implementation of onSensorChanged(SensorEvent)
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
@@ -38,13 +47,11 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
     private long totalTime = 0;
     private long timeThreshold = 100;
 
-    // will store the data that we want to output - may expand to other sensors as well
-    private ArrayList<Float[]> lin_accel = new ArrayList<>();
+    private ArrayList<Float[]> lin_accel = new ArrayList<>();// will store the raw IMU data - may expand to other sensors as well
 
-    // tracks IMU data capture switch toggle
-    private boolean isPaused = true;
+    private boolean isPaused = true; // tracks IMU data capture switch toggle
 
-    final long SIZE_KB = 1024L;
+    final long SIZE_KB = 1024L;  // for storage tracking
     final long SIZE_GB = SIZE_KB * SIZE_KB * SIZE_KB;
 
     @Override
@@ -73,32 +80,30 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
      * save current data batch and start a new one
      */
     public void newBatchTest(View view) {
-        //@TODO implement a check for empty batches to ensure empty batches are not being saved
         long availableSpace = getAvailableSpace();
 
-        // needs to verify there is sufficient storage space to start a new batch
-        if (availableSpace > 1) {
-            if (isPaused) {
-//                Toast toast = Toast.makeText(getApplicationContext(), "Batch Size: "+lin_accel.size()+"\nTime: "+totalTime, Toast.LENGTH_LONG );
-//                toast.setGravity(Gravity.BOTTOM, 0,20);
-//                toast.show();
+        if (availableSpace > 1) { // verify there is > 1GB storage
+            if (!lin_accel.isEmpty()) { // verify an empty batch is not being saved
+                if (isPaused) { // verify our data collection switch is OFF before saving
+                    saveDataToStorage(lin_accel);
 
-                //@TODO SAVE DATA IN HERE (call saveDataToStorage())
+                    lastUpdate = 0;
+                    totalTime = 0; // reset timer
+                    lin_accel.clear(); // reset data batch
 
-                saveDataToStorage(lin_accel);
-
-                lastUpdate = 0;
-                totalTime = 0; // reset timer
-                lin_accel.clear(); // reset data batch
+                } else {
+                    toastMessage("Toggle data collection switch OFF before creating new batch");
+                }
 
             } else {
-                Toast toast = Toast.makeText(getApplicationContext(), "Toggle data collection switch OFF before creating new batch", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.BOTTOM, 0, 20);
-                toast.show();
+                toastMessage("Cannot save an empty data batch!");
             }
+
         } else {
-            lowStorageMessage();
-            //@TODO must also save and empty the most recent batch if it is not empty!
+            toastMessage("Less than 1GB remaining... \n Please clear space on storage device.");
+            lastUpdate = 0;
+            totalTime = 0; // reset timer
+            lin_accel.clear(); // reset data batch
         }
     }
 
@@ -109,35 +114,54 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
     public void saveDataToStorage(ArrayList<Float[]> data) {
         //@TODO save the CSV file into the DOWNLOADS folder with naming such that each data set is unique
 
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        File csvOutputFile = new File(path, "IMU_data_"+getCurrentTimeAndDate()+".csv");
-
-
         try {
-            FileOutputStream fw = new FileOutputStream(csvOutputFile);
-            OutputStreamWriter myOutWriter = new OutputStreamWriter(fw);
+            String fileName = "IMU_data_" + getCurrentTimeAndDate() + ".txt";
+            File csvOutputFolder = new File(Environment.getExternalStorageDirectory() // folder initialization
+                    + "/Android/data/com.example.caris_wheelchair/IMU_data/");
 
-            for (Float[] f : data ) {
-                myOutWriter.write(convertToCSVFormat(f));
+            if (!csvOutputFolder.exists()) { // if folder does not exist, it is created
+                csvOutputFolder.mkdirs();
             }
 
-            myOutWriter.close();
+            File csvOutputFile = new File(csvOutputFolder, fileName); // .csv file initialization
+
+            if (!csvOutputFile.exists()) { // if the file does not exist, it is created
+                csvOutputFile.createNewFile();
+            }
+
+            checkWriteFilePermission(); // Check to make sure we have permission to write files to external storage
+            FileWriter fw = new FileWriter(csvOutputFile);
+
+
+            for (Float[] f : data ) { // iterate through and write each series of data to a line in csv format
+                fw.write(convertToCSVFormat(f));
+                fw.write("\n\r");
+            }
+
             fw.close();
 
-            Toast toast = Toast.makeText(getApplicationContext(), "Data save successful", Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.BOTTOM, 0, 20);
-            toast.show();
+            toastMessage("Data save successful!");
 
         } catch (IOException ex) {
             Log.e("STORAGE", ex.getMessage(), ex);
-            Toast toast = Toast.makeText(getApplicationContext(), "Data save failed", Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.BOTTOM, 0, 20);
-            toast.show();
+            toastMessage("Data save failed.");
         }
     }
 
     /*
-     * @params a string containing a concatenated string of 'day of year' & 'time' in 24H format.
+     * checks if app has permission to write files and prompts user for write permission if
+     * it does not initially have it
+     */
+    public void checkWriteFilePermission() {
+        if( ContextCompat.checkSelfPermission(IMUCapture.this, Manifest.permission.WRITE_EXTERNAL_STORAGE )
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions( IMUCapture.this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+        }
+    }
+
+    /*
+     * @params an array of floats containing timestamp and xyz accelerometer data.
      * @returns a concatenated csv string of the data line
      */
     public String convertToCSVFormat(Float[] data) {
@@ -154,13 +178,12 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
      * @returns a string containing a concatenated string of 'day of year' & 'time' in 24H format.
      */
     public String getCurrentTimeAndDate() {
-        // initializations
         Calendar cal = Calendar.getInstance();
         Integer day = cal.get(Calendar.DAY_OF_MONTH);
         Integer month = cal.get(Calendar.MONTH);
         Integer year = cal.get(Calendar.YEAR);
         Date time = cal.getTime();
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss", Locale.CANADA);
+        DateFormat dateFormat = new SimpleDateFormat("HH_mm_ss", Locale.CANADA);
 
         // convert day, month, and year values to strings to be added to the final return string
         String formattedDate = dateFormat.format(time);
@@ -172,7 +195,7 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
     }
 
     /*
-     * toast available free space left on device
+     * toast available free space left on device when prompted
      */
     public void queryFreeSpace(View view) {
         long availableSpace = getAvailableSpace();
@@ -182,7 +205,7 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
             toast.setGravity(Gravity.BOTTOM, 0, 20);
             toast.show();
         } else {
-            lowStorageMessage();
+            toastMessage("Less than 1GB remaining... \n Please clear space on storage device.");
         }
     }
 
@@ -195,10 +218,10 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
     }
 
     /*
-     * toast a low storage message on app
+     * toast a message on app
      */
-    public void lowStorageMessage() {
-        Toast toast = Toast.makeText(getApplicationContext(), "Less than 1GB remaining\nPlease clear space on device", Toast.LENGTH_LONG);
+    public void toastMessage(String message) {
+        Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.BOTTOM, 0, 20);
         toast.show();
     }
