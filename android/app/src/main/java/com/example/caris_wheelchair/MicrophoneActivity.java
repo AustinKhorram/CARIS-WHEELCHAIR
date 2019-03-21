@@ -40,6 +40,7 @@ public class MicrophoneActivity extends AppCompatActivity {
 
     private boolean isRecording = false;
     private boolean isPlaying = false;
+    private boolean audioRecorded = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -97,6 +98,7 @@ public class MicrophoneActivity extends AppCompatActivity {
         } catch (NullPointerException e) {
             Log.e(LOG_TAG, "MediaRecorder is null");
         }
+        audioRecorded = true;
         // Retrieve metadata about the recorded file
         MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
         metadataRetriever.setDataSource(fileName);
@@ -121,13 +123,15 @@ public class MicrophoneActivity extends AppCompatActivity {
 
     /** Helper method to create a MediaPlayer Object and start it **/
     private void startPlaying() {
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(fileName);
-            player.prepare();
-            player.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Player prepare() failed");
+        if (audioRecorded) {
+            player = new MediaPlayer();
+            try {
+                player.setDataSource(fileName);
+                player.prepare();
+                player.start();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Player prepare() failed");
+            }
         }
     }
 
@@ -180,7 +184,8 @@ public class MicrophoneActivity extends AppCompatActivity {
 
         /* Check if sd card is writeable, and retrieve available space */
         TextView textView_sdCardSpace = findViewById(R.id.textView_sdCardSpace) ;
-        File saveFile = null;
+
+        /*File saveFile = null;
         if (isExternalStorageWritable()) {
             try {
                 saveFile = getPublicAlbumStorageDir("audio");
@@ -189,13 +194,17 @@ public class MicrophoneActivity extends AppCompatActivity {
             }
         } else { // Record to external cache directory by default
             try {
-                saveFile = getExternalCacheDir();
+                saveFile = Environment.getExternalStorageDirectory();
             } catch (NullPointerException e) {
                 Log.e(LOG_TAG, "Could not get external cache directory");
             }
-        }
-        fileName = saveFile.getAbsolutePath();
-        fileName += "/" + dateSaved + ".3gp"; // Filename of output
+        }*/
+
+        //fileName = saveFile.getAbsolutePath();
+        //fileName += "/" + dateSaved + ".3gp"; // Filename of output
+
+        final File saveFile = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+dateSaved+".3gp");
+        fileName = saveFile.toString();
 
         String availableSpace = String.valueOf(saveFile.getFreeSpace() / 1024.0 / 1024.0) ;
         availableSpace += " MB";

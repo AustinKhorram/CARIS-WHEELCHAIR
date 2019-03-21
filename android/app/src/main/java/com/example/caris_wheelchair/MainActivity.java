@@ -13,9 +13,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Create Camera instance in separate thread
-
     }
 
     /** Check if this device has a camera
@@ -48,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the Microphone button**/
     public void openMicrophone(View view) {
         Intent intent = new Intent(this, MicrophoneActivity.class);
+        startActivity(intent);
+    }
+
+    /** Called when the user taps the Microphone button**/
+    public void openIntegrated(View view) {
+        Intent intent = new Intent(this, IntegratedActivity.class);
         startActivity(intent);
     }
 }
