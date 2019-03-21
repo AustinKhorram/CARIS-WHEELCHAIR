@@ -69,7 +69,9 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
 
     }
 
-    // save current data batch and start new batch
+    /*
+     * save current data batch and start a new one
+     */
     public void newBatchTest(View view) {
         //@TODO implement a check for empty batches to ensure empty batches are not being saved
         long availableSpace = getAvailableSpace();
@@ -132,13 +134,11 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
             toast.setGravity(Gravity.BOTTOM, 0, 20);
             toast.show();
         }
-
-
     }
 
     /*
      * @params a string containing a concatenated string of 'day of year' & 'time' in 24H format.
-     * @returns a
+     * @returns a concatenated csv string of the data line
      */
     public String convertToCSVFormat(Float[] data) {
         StringBuilder csvLineBuilder = new StringBuilder();
