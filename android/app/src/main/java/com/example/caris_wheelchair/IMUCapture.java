@@ -23,9 +23,7 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,8 +31,6 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.FileWriter;
 
 public class IMUCapture extends AppCompatActivity implements SensorEventListener, CompoundButton.OnCheckedChangeListener {
