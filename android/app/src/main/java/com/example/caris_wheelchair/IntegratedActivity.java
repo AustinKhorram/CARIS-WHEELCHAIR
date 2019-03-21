@@ -66,8 +66,11 @@ public class IntegratedActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 201;
     private static String fileNameAudio;
 
-    DateFormat dateFormatDisplay = new SimpleDateFormat(getString(R.string.date_display_format));
-    DateFormat dateFormatSave = new SimpleDateFormat(getString(R.string.date_save_format));
+    DateFormat dateFormatDisplay;
+    DateFormat dateFormatSave;
+    Date date;
+    String dateDisplayed;
+    String dateSaved;
 
     /*
     Audio specific
@@ -138,6 +141,12 @@ public class IntegratedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_integrated);
 
+        dateFormatDisplay = new SimpleDateFormat(getString(R.string.date_save_format));
+        dateFormatSave = new SimpleDateFormat(getString(R.string.date_save_format));
+        date = new Date();
+        dateDisplayed = dateFormatDisplay.format(date);
+        dateSaved = dateFormatSave.format(date);
+
         textureView = findViewById(R.id.cameraPreview);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
@@ -157,19 +166,23 @@ public class IntegratedActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(IntegratedActivity.this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // close the app
                 Toast.makeText(IntegratedActivity.this, "Sorry!!!, you can't use this app without granting permission", Toast.LENGTH_LONG).show();
                 finish();
             }
         } else if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // close the app
                 Toast.makeText(IntegratedActivity.this, "Sorry!!!, you can't use this app without granting permission", Toast.LENGTH_LONG).show();
                 finish();
             }
@@ -216,7 +229,7 @@ public class IntegratedActivity extends AppCompatActivity {
 
     /** Occurs when Record button pressed On/Off **/
     public void onRecordAudio(View view) {
-        TextView textView = findViewById(R.id.button_record);
+        TextView textView = findViewById(R.id.button_audio);
         if (isRecordingAudio) {
             stopRecordingAudio();
             textView.setText(getString(R.string.record_text));
@@ -229,7 +242,7 @@ public class IntegratedActivity extends AppCompatActivity {
 
     /** Occurs when Play button pressed On/Off (Not used currently in integrated env)**/
     public void onPlayAudio(View view) {
-        TextView textView = findViewById(R.id.button_play);
+        TextView textView = findViewById(R.id.button_audio);
         if (isPlayingAudio) {
             stopPlayingAudio();
             textView.setText(getString(R.string.play_text));
@@ -242,23 +255,17 @@ public class IntegratedActivity extends AppCompatActivity {
 
     /** Helper method to create a MediaRecorder object and start it **/
     private void startRecordingAudio() {
-        Date date = new Date();
-
-        String dateDisplayed = dateFormatDisplay.format(date);
-        String dateSaved = dateFormatSave.format(date);
-
-        TextView textView_time = findViewById(R.id.textView_time);
-        textView_time.setText(dateDisplayed);
+        //TextView textView_time = findViewById(R.id.textView_time);
+        //textView_time.setText(dateDisplayed);
 
         // Check if sd card is writeable, and retrieve available space
-        TextView textView_sdCardSpace = findViewById(R.id.textView_sdCardSpace) ;
+        //TextView textView_sdCardSpace = findViewById(R.id.textView_sdCardSpace) ;
 
         final File saveFile = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+dateSaved+".3gp");
-        assert saveFile != null;
         fileNameAudio = saveFile.toString();
         String availableSpace = String.valueOf(saveFile.getFreeSpace() / 1024.0 / 1024.0) ;
         availableSpace += " MB";
-        textView_sdCardSpace.setText(availableSpace);
+        //textView_sdCardSpace.setText(availableSpace);
 
         /* Create media audioRecorder object */
         audioRecorder = new MediaRecorder(); //TODO: Optimize encoding, sampling rate, file format
@@ -320,8 +327,8 @@ public class IntegratedActivity extends AppCompatActivity {
             audio_length_str = "0" + minutes + ":" + seconds;
         }
 
-        TextView textView_time = findViewById(R.id.textView_timeAudio);
-        textView_time.setText(audio_length_str);
+        //TextView textView_time = findViewById(R.id.textView_timeAudio);
+        //textView_time.setText(audio_length_str);
 
         audioRecorder = null;
     }
