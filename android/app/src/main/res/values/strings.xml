@@ -21,4 +21,6 @@
     <string name="text_no">No</string>
     <string name="text_yes">Yes</string>
     <string name="app_dir">com.example.caris_wheelchair</string>
+    <string name="title_activity_integrated">IntegratedActivity</string>
+    <string name="open_integrated_text">Integrated</string>
 </resources>
