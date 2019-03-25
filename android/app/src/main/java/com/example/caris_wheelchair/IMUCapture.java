@@ -1,7 +1,6 @@
 package com.example.caris_wheelchair;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -39,13 +38,15 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
     // required for implementation of onSensorChanged(SensorEvent)
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
+    private Sensor senGyroscope;
     private long lastUpdate = SystemClock.elapsedRealtime();
     private long totalTime = 0;
-    private long timeThreshold = 100;
+    private long timeThreshold = 0;
 
-    private ArrayList<Float[]> lin_accel = new ArrayList<>();// will store the raw IMU data - may expand to other sensors as well
+    private ArrayList<Float[]> data = new ArrayList<>();// will store the raw IMU data - may expand to other sensors as well
 
     private boolean isPaused = true; // tracks IMU data capture switch toggle
+    private boolean accelOrGyro = true; // is true when looking for accel data, false when looking for gyro
 
     final long SIZE_KB = 1024L;  // for storage tracking
     final long SIZE_GB = SIZE_KB * SIZE_KB * SIZE_KB;
@@ -64,7 +65,20 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
         // initialize sensor variables
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        senGyroscope = senSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        senSensorManager.registerListener(this, senGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+
+        float minDelayAccel = senAccelerometer.getMinDelay(); // returns time in MICROSECONDS
+        float minDelayGyro = senGyroscope.getMinDelay();
+
+        if (minDelayAccel >= minDelayGyro ) {
+            timeThreshold = (long) minDelayAccel / 1000; // conversion from micro to milli seconds
+        } else {
+            timeThreshold = (long) minDelayGyro / 1000;
+        }
+
+        Log.d("timeThreshold", ( (Long) timeThreshold).toString());
 
         Switch IMUtoggle = findViewById(R.id.imu_data_collection);
         IMUtoggle.setOnCheckedChangeListener(this);
@@ -79,13 +93,13 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
         long availableSpace = getAvailableSpace();
 
         if (availableSpace > 1) { // verify there is > 1GB storage
-            if (!lin_accel.isEmpty()) { // verify an empty batch is not being saved
+            if (!data.isEmpty()) { // verify an empty batch is not being saved
                 if (isPaused) { // verify our data collection switch is OFF before saving
-                    saveDataToStorage(lin_accel);
+                    saveDataToStorage(data);
 
                     lastUpdate = 0;
                     totalTime = 0; // reset timer
-                    lin_accel.clear(); // reset data batch
+                    data.clear(); // reset data batch
 
                 } else {
                     toastMessage("Toggle data collection switch OFF before creating new batch");
@@ -99,7 +113,7 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
             toastMessage("Less than 1GB remaining... \n Please clear space on storage device.");
             lastUpdate = 0;
             totalTime = 0; // reset timer
-            lin_accel.clear(); // reset data batch
+            data.clear(); // reset data batch
         }
     }
 
@@ -108,8 +122,6 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
      * converts to a CSV then saves CSV on external storage.
      */
     public void saveDataToStorage(ArrayList<Float[]> data) {
-        //@TODO save the CSV file into the DOWNLOADS folder with naming such that each data set is unique
-
         try {
             String fileName = "IMU_data_" + getCurrentTimeAndDate() + ".txt";
             File csvOutputFolder = new File(Environment.getExternalStorageDirectory() // folder initialization
@@ -232,7 +244,7 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
 
     @Override
     /*
-     * when sensor value changes, save data every 100 ms
+     * when sensor value changes, save data every "timeThreshold" milliseconds
      * saves data in a list of float[] arrays
      */
     public void onSensorChanged(SensorEvent sensorEvent){
@@ -241,14 +253,37 @@ public class IMUCapture extends AppCompatActivity implements SensorEventListener
             Sensor mySensor = sensorEvent.sensor;
             long currentTime = SystemClock.elapsedRealtime();
 
-            // reads data every "timeThreshold" milliseconds
-            if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION && currentTime - lastUpdate > timeThreshold) {
-                Float[] rowData = new Float[] {(float)totalTime/1000, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]};
-                lin_accel.add(rowData); // adds row of 4 column data (timestamp, x/y/z linear acceleration_
+            // IF sensorChanged is the accelerometer, create a new line of data including timestamp
+            if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION
+                    && accelOrGyro) {
+
+                Float[] rowData = new Float[] {(float)totalTime/1000, sensorEvent.values[0],
+                        sensorEvent.values[1], sensorEvent.values[2]};
+                data.add(rowData); // adds row of 4 column data (timestamp, x/y/z linear acceleration_
 
                 totalTime += (currentTime - lastUpdate); // keep track of total time of this data batch
                 lastUpdate = currentTime; // reset most recent update
 
+                accelOrGyro = false;
+
+            // IF sensorChanged is the gyro, add the gyro data to the most recent existing accelerometer
+            // data and set the search for new accelerometer data
+            } else if (mySensor.getType() == Sensor.TYPE_GYROSCOPE
+                    && !accelOrGyro) {
+
+                // Appending current accelerometer data to add gyro data
+                Float[] rowData = new Float[] {sensorEvent.values[0], sensorEvent.values[1],
+                        sensorEvent.values[2]};
+                int maxIndex = data.size() - 1;
+                Float[] temp = data.get(maxIndex);
+                Float[] appendedData = {temp[0], temp[1], temp[2], temp[3], rowData[0], rowData[1], rowData[2]};
+                data.remove(maxIndex);
+                data.add(maxIndex, appendedData);
+
+                totalTime += (currentTime - lastUpdate); // keep track of total time of this data batch
+                lastUpdate = currentTime; // reset most recent update
+
+                accelOrGyro = true;
             }
         } else {
             lastUpdate = SystemClock.elapsedRealtime();
