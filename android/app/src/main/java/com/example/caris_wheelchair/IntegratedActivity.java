@@ -38,6 +38,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +62,7 @@ public class IntegratedActivity extends AppCompatActivity {
     /*
     General
     */
+    //TODO: Configure file naming with different terrain states
     static final String LOG_TAG = "IntegratedActivity";
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
@@ -261,7 +263,7 @@ public class IntegratedActivity extends AppCompatActivity {
         // Check if sd card is writeable, and retrieve available space
         //TextView textView_sdCardSpace = findViewById(R.id.textView_sdCardSpace) ;
 
-        final File saveFile = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+dateSaved+".3gp");
+        final File saveFile = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+getCurrentGroundState()+dateSaved+".3gp");
         fileNameAudio = saveFile.toString();
         String availableSpace = String.valueOf(saveFile.getFreeSpace() / 1024.0 / 1024.0) ;
         availableSpace += " MB";
@@ -483,7 +485,8 @@ public class IntegratedActivity extends AppCompatActivity {
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
             Date date = new Date();
             String dateSaved = dateFormatSave.format(date);
-            final File file = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+dateSaved+".jpg");
+            final File file = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+getCurrentGroundState()+dateSaved+".jpg");
+
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -498,7 +501,11 @@ public class IntegratedActivity extends AppCompatActivity {
                         e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
-                    } finally {
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+
+                    finally {
                         if (image != null) {
                             image.close();
                         }
@@ -652,5 +659,24 @@ public class IntegratedActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    protected String getCurrentGroundState() {
+        RadioButton grass = findViewById(R.id.grassButton);
+        RadioButton gravel = findViewById(R.id.gravelButton);
+        RadioButton pavement = findViewById(R.id.pavementButton);
+        RadioButton indoor = findViewById(R.id.pavementButton);
+
+        String state_names = "";
+        if (grass.isChecked()) {
+            state_names += "grass_";
+        } if (gravel.isChecked()) {
+            state_names += "gravel_";
+        } if (pavement.isChecked()) {
+            state_names += "pavement_";
+        } if (indoor.isChecked()) {
+            state_names += "indoor_";
+        }
+        return state_names;
     }
 }
