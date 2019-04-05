@@ -17,6 +17,7 @@ SOURCE_DIR = "."
 X_ACC_INDEX     = 0
 Y_ACC_INDEX     = 1
 Z_ACC_INDEX     = 2
+LIN_ACC_OFFSET  = 3
 TIMESTAMP_INDEX = 9
 TITLES          = ["X Acceleration", "Y Acceleration", "Z Acceleration", \
                    "X Linear Acceleration", "Y Linear Acceleration", "Z Linear Acceleration", \
@@ -92,6 +93,11 @@ def centroid(data_setX, data_setY):
 	sumY = np.sum(data_setY)
 	return [sumX / len(data_setX), sumY / len(data_setY)]
 
+def averageValsFilter(data, sampleSize):
+	subX = splitArrayIntoNEvenSubArrays(data, len(data)//sampleSize)
+	subX = [sum(subArr)/len(subArr) for subArr in subX]
+
+	return subX
 
 ### Data Visualization Helper Functions ### 
 def plotAcc (time, accX, accY, accZ):
@@ -110,63 +116,83 @@ def main():
 			if filename.endswith(('.txt','.csv')):
 				print(filename)
 
+				terrainType        = filename.split("_")[0]
+				filenameWithoutExt = filename.split(".")[0]
+
+
 				IMU_data = parseCSVAndRotate(filename,       \
 					                         noOfColumns=10, \
 					                         delimiter=";",  \
 					                         readFromLine=2)
 
-				
+				"""
 				for i in range(1,3):
 					# Plot all three acceleration graphs 
 					plotAcc(IMU_data[TIMESTAMP_INDEX],   \
-							IMU_data[X_ACC_INDEX + i*3], \
-						    IMU_data[Y_ACC_INDEX + i*3], \
-						    IMU_data[Z_ACC_INDEX + i*3])
-				
+							averageValsFilter(IMU_data[X_ACC_INDEX + i*3], 5), \
+						    averageValsFilter(IMU_data[Y_ACC_INDEX + i*3], 5), \
+						    averageValsFilter(IMU_data[Z_ACC_INDEX + i*3], 5))
+				"""
+
+				FILTER_SAMPLE_SIZE = 5; 
+
+				time      = [float(i) for i in IMU_data[TIMESTAMP_INDEX]]
+				time_filt = time[::FILTER_SAMPLE_SIZE]
 
 				# Now find the positive and negative variances of the peaks
 				# for each discrete IMU data set and plot the two dimensional 
 				# graph, noting any discrepancies
 				# The last index carries the time stamp so don't find the variance
 				# of that one  
-				PEAK_VAR_SAMPLE_SIZE = 50
+				PEAK_VAR_SAMPLE_SIZE = 30
 
 				# main the linear and gyroscopic accelerations which are 
 				# indexed from 3 to 8
-				for i, data_set in enumerate(IMU_data[3:9]):
+				for i, data_set in enumerate(IMU_data[LIN_ACC_OFFSET:-1]):
 					# Take each variance to be a sample size of 50 and then plot
 					# it accordingly 
-					samples      = splitArrayIntoNEvenSubArrays(data_set, \
-						                                        len(data_set) // PEAK_VAR_SAMPLE_SIZE)
+					
+					data_set      = [float(i) for i in data_set]
+					data_set_comp = data_set[::FILTER_SAMPLE_SIZE]
+					data_set_filt = averageValsFilter(data_set, FILTER_SAMPLE_SIZE)
+					data_set_len  = len(data_set_filt)
+
+					plt.title(terrainType + ' ' + TITLES[LIN_ACC_OFFSET + i])
+
+					plt.plot(time_filt, data_set_comp, c='r')
+					#plt.plot(time, data_set)
+
+					plt.show()
+					plt.close()
+
+					data_set_to_use = data_set_comp
+					no_of_groups = len(data_set_to_use) // PEAK_VAR_SAMPLE_SIZE
+
+					samples      = splitArrayIntoNEvenSubArrays(data_set_to_use, no_of_groups)
+					
 					pos_variances = []
 					neg_variances = []
 
 					for sample in samples:
 						pos_variances.append(findVarianceOfPositivePeaks(sample))
 						neg_variances.append(findVarianceOfNegativePeaks(sample))
-
+					
 					#fig, ax  = plt.subplots()
 					#lines = ax.plot(neg_variances, pos_variances, 'ro')
 					
 					#ax.set_xlabel('Frequency (Hz)')
 					#ax.set_ylabel('Amplitude')
-					if (i):
-						plotName = "Frequency Domain Z Gyroscope"
-					else:
-						plotName = "Frequency Domain Z Acceleration"
 					
 					#ax.set_title(plotName)
 					#fig.savefig(plotName + ' ' + tempName + '.png')
+					
 					plt.plot(neg_variances, pos_variances, 'ro')
-					plt.title(TITLES[i])
+					plt.title(terrainType + ' ' + TITLES[LIN_ACC_OFFSET + i])
+					plt.xlabel("Variance of Acceleration Valleys")
+					plt.ylabel("Variance of Acceleration Peaks")
 					plt.show()
 
-					#c = centroid(neg_variances, pos_variances)
-
-					#print (c[0])
-					#print (c[1])
-
-					#Try to also run FFT on the data set
+					plt.close()
 
 					
 

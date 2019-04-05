@@ -126,6 +126,29 @@ def analyze():
 				for i, data_set in enumerate(IMU_data[:-1]):
 					data_set = [float(i) for i in data_set]
 
+					fig, ax  = plt.subplots()
+					lines = ax.plot(IMU_data[-1], data_set) 
+					
+					ax.set_xlabel('Time (s)')
+
+					if i in list(range(6,9)):
+						ax.set_ylabel('Acceleration (rad/s/s)')
+					else:
+						ax.set_ylabel('Acceleration (m/s/s)')
+
+					outputFileName = "Raw " + TITLES[i] + ' ' + filenameWithoutExt
+					plotName = terrainType + ' ' + TITLES[i] + ' Raw'
+					
+					if i in list(range(6,9)):
+						ax.set_ybound(lower=-1, upper=1)
+					else:
+						ax.set_ybound(lower=-5, upper=5)
+
+					ax.set_title(plotName)
+					fig.savefig(outputFileName + ".png")
+
+					plt.close()
+
 					# Create a butterworth filter to clean up the noise in the IMU data
 					CUTOFF_FREQ   = 40  # Hz
 					ORDER         = 6
@@ -149,7 +172,7 @@ def analyze():
 						
 						print(len(y))
 						print(len(x))
-						"""
+						
 						fig, ax  = plt.subplots()
 						lines = ax.plot(x, y) 
 						
@@ -168,7 +191,6 @@ def analyze():
 						fig.savefig(outputFileName + ".png")
 
 						plt.close()
-						"""
 
 
 if __name__ == '__main__':
