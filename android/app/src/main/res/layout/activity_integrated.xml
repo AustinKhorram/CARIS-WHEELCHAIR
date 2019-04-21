@@ -38,7 +38,7 @@ tools:context=".IntegratedActivity">
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.618" />
+        app:layout_constraintVertical_bias="0.47" />
 
     <Button
         android:id="@+id/IMU"
@@ -51,39 +51,5 @@ tools:context=".IntegratedActivity">
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/button_audio"
         app:layout_constraintStart_toEndOf="@+id/button_photo" />
-
-    <RadioButton
-        android:id="@+id/grassButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Grass"
-        tools:layout_editor_absoluteX="120dp"
-        tools:layout_editor_absoluteY="94dp" />
-
-    <RadioButton
-        android:id="@+id/gravelButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="RadioButton"
-        tools:layout_editor_absoluteX="120dp"
-        tools:layout_editor_absoluteY="120dp"
-        tools:text="Gravel" />
-
-    <RadioButton
-        android:id="@+id/pavementButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="RadioButton"
-        tools:layout_editor_absoluteX="237dp"
-        tools:layout_editor_absoluteY="94dp"
-        tools:text="Pavement" />
-
-    <RadioButton
-        android:id="@+id/indoorButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Indoor"
-        tools:layout_editor_absoluteX="237dp"
-        tools:layout_editor_absoluteY="120dp" />
 
 </android.support.constraint.ConstraintLayout>

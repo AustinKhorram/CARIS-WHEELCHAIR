@@ -77,7 +77,6 @@ public class IntegratedActivity extends AppCompatActivity {
     /*
     Audio specific
      */
-
     private static final int AUDIO_BIT_RATE = 255;
     private static final int AUDIO_SAMP_RATE = 16000;
 
@@ -85,17 +84,12 @@ public class IntegratedActivity extends AppCompatActivity {
     private MediaPlayer audioPlayer;
 
     private boolean audioRecorded = false;
-
-    // Request permission to RECORD_AUDIO
-    //private String [] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA};
-
     private boolean isRecordingAudio = false;
     private boolean isPlayingAudio = false;
 
     /*
     Camera specific
      */
-
     private Button takePictureButton;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -149,12 +143,13 @@ public class IntegratedActivity extends AppCompatActivity {
         dateDisplayed = dateFormatDisplay.format(date);
         dateSaved = dateFormatSave.format(date);
 
-        textureView = findViewById(R.id.cameraPreview);
-        assert textureView != null;
-        textureView.setSurfaceTextureListener(textureListener);
-        takePictureButton = findViewById(R.id.button_photo);
-        assert takePictureButton != null;
-
+        try {
+            textureView = findViewById(R.id.cameraPreview);
+            textureView.setSurfaceTextureListener(textureListener);
+            takePictureButton = findViewById(R.id.button_photo);
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -242,7 +237,7 @@ public class IntegratedActivity extends AppCompatActivity {
         isRecordingAudio = !isRecordingAudio;
     }
 
-    /** Occurs when Play button pressed On/Off (Not used currently in integrated env)**/
+    /** Occurs when Play button pressed On/Off (Not used currently in integrated environment)**/
     public void onPlayAudio(View view) {
         TextView textView = findViewById(R.id.button_audio);
         if (isPlayingAudio) {
@@ -263,7 +258,7 @@ public class IntegratedActivity extends AppCompatActivity {
         // Check if sd card is writeable, and retrieve available space
         //TextView textView_sdCardSpace = findViewById(R.id.textView_sdCardSpace) ;
 
-        final File saveFile = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+getCurrentGroundState()+dateSaved+".3gp");
+        final File saveFile = new File(getPublicAlbumStorageDir("CARIS"),dateSaved+".3gp");
         fileNameAudio = saveFile.toString();
         String availableSpace = String.valueOf(saveFile.getFreeSpace() / 1024.0 / 1024.0) ;
         availableSpace += " MB";
@@ -313,6 +308,8 @@ public class IntegratedActivity extends AppCompatActivity {
             audioRecorder.release();
         } catch (NullPointerException e) {
             Log.e(LOG_TAG, "MediaRecorder is null");
+        } catch (IllegalStateException e) {
+            Log.e(LOG_TAG, "Could not open file");
         }
         // Retrieve metadata about the recorded file
         MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
@@ -472,10 +469,14 @@ public class IntegratedActivity extends AppCompatActivity {
             ImageReader reader = ImageReader.newInstance(IMG_WIDTH, IMG_HEIGHT, ImageFormat.JPEG, 1);
             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
             Surface currentSurface = reader.getSurface();
-            assert currentSurface != null;
+            if (currentSurface == null) {
+                return false;
+            }
             outputSurfaces.add(currentSurface);
             SurfaceTexture currentSurfaceTexture = textureView.getSurfaceTexture();
-            assert currentSurfaceTexture != null;
+            if (currentSurfaceTexture == null) {
+                return false;
+            }
             outputSurfaces.add(new Surface(currentSurfaceTexture));
             final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(reader.getSurface());
@@ -485,7 +486,7 @@ public class IntegratedActivity extends AppCompatActivity {
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
             Date date = new Date();
             String dateSaved = dateFormatSave.format(date);
-            final File file = new File(Environment.getExternalStorageDirectory()+"/Android/data/com.example.caris_wheelchair/"+getCurrentGroundState()+dateSaved+".jpg");
+            final File saveFile = new File(getPublicAlbumStorageDir("CARIS"),dateSaved+".jpg");
 
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -514,7 +515,7 @@ public class IntegratedActivity extends AppCompatActivity {
                 private void save(byte[] bytes) throws IOException {
                     OutputStream output = null;
                     try {
-                        output = new FileOutputStream(file);
+                        output = new FileOutputStream(saveFile);
                         output.write(bytes);
                     } finally {
                         if (null != output) {
@@ -528,7 +529,7 @@ public class IntegratedActivity extends AppCompatActivity {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Toast toast = Toast.makeText(IntegratedActivity.this, "Saved:" + file, Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(IntegratedActivity.this, "Saved:" + saveFile, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 200);
                     toast.setDuration(Toast.LENGTH_SHORT);
                     toast.show();
@@ -661,6 +662,7 @@ public class IntegratedActivity extends AppCompatActivity {
         }
     }
 
+    /*
     protected String getCurrentGroundState() {
         RadioButton grass = findViewById(R.id.grassButton);
         RadioButton gravel = findViewById(R.id.gravelButton);
@@ -679,4 +681,5 @@ public class IntegratedActivity extends AppCompatActivity {
         }
         return state_names;
     }
+    */
 }
