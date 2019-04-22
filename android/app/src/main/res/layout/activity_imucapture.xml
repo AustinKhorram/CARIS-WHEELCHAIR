@@ -68,7 +68,7 @@
         </RelativeLayout>
 
         <Button
-            android:id="@+id/newBatch"
+            android:id="@+id/button_IMU"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/relativeLayout2"
@@ -83,7 +83,7 @@
             android:id="@+id/queryFreeSpace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/newBatch"
+            android:layout_below="@id/button_IMU"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="4dp"
             android:layout_marginRight="32dp"

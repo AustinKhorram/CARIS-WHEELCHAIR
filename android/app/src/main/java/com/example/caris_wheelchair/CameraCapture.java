@@ -254,10 +254,10 @@ public class CameraCapture extends AppCompatActivity{
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    Toast toast = Toast.makeText(CameraCapture.this, "Saved:" + file, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 200);
-                    toast.setDuration(Toast.LENGTH_SHORT);
-                    toast.show();
+                    //Toast toast = Toast.makeText(CameraCapture.this, "Saved:" + file, Toast.LENGTH_SHORT);
+                    //toast.setGravity(Gravity.TOP|Gravity.CENTER, 0, 200);
+                    //toast.setDuration(Toast.LENGTH_SHORT);
+                    //toast.show();
                     createCameraPreview();
                 }
             };

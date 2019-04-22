@@ -1,57 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.caris_wheelchair">
+package="com.example.caris_wheelchair">
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<<<<<<< HEAD
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <uses-feature android:name="android.hardware.camera2.full" />
-=======
->>>>>>> austin/IMU_dev
+<application
+    android:allowBackup="true"
+    android:icon="@mipmap/ic_launcher"
+    android:label="CARIS Wheelchair"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:theme="@style/AppTheme">
+    <activity
+        android:name=".IMUCapture"
+        android:label="@string/title_activity_imu_data_collection"
+        android:parentActivityName=".MainActivity"
+        android:theme="@style/AppTheme.NoActionBar">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.example.caris_wheelchair.MainActivity" />
+    </activity>
+    <activity android:name=".MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
 
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="CARIS Wheelchair"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity
-            android:name=".IMUCapture"
-            android:label="@string/title_activity_imu_data_collection"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.caris_wheelchair.MainActivity" />
-        </activity>
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".DisplayMessageActivity"
-<<<<<<< HEAD
-            android:parentActivityName=".MainActivity"></activity>
-        <activity
-            android:name=".MicrophoneActivity"
-            android:parentActivityName=".MainActivity"></activity>
-        <activity
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+    <activity
+        android:name=".DisplayMessageActivity"
+        android:parentActivityName=".MainActivity">
+    </activity>
+    <activity
+        android:name=".MicrophoneActivity"
+        android:parentActivityName=".MainActivity">
+    </activity>
+    <activity
         android:name=".CameraCapture"
-        android:parentActivityName=".MainActivity"></activity>
-        <activity
-            android:name=".IntegratedActivity"
-            android:parentActivityName=".MainActivity"></activity>
-=======
-            android:parentActivityName=".MainActivity">
-        </activity>
->>>>>>> austin/IMU_dev
-    </application>
+        android:parentActivityName=".MainActivity">
+    </activity>
+    <activity
+        android:name=".IntegratedActivity"
+        android:parentActivityName=".MainActivity">
+    </activity>
+</application>
 
 </manifest>

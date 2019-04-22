@@ -10,8 +10,8 @@ tools:context=".IntegratedActivity">
         android:id="@+id/button_audio"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="28dp"
         android:onClick="onRecordAudio"
         android:text="Audio"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -23,7 +23,7 @@ tools:context=".IntegratedActivity">
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="32dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="28dp"
         android:text="@string/camera_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -41,15 +41,29 @@ tools:context=".IntegratedActivity">
         app:layout_constraintVertical_bias="0.47" />
 
     <Button
-        android:id="@+id/IMU"
+        android:id="@+id/button_IMU"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="28dp"
+        android:onClick="newBatchTest"
         android:text="IMU"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/button_audio"
+        app:layout_constraintHorizontal_bias="0.506"
         app:layout_constraintStart_toEndOf="@+id/button_photo" />
+
+    <Switch
+        android:id="@+id/switch_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="8dp"
+        android:text="IMU On"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

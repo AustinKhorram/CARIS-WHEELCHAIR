@@ -8,7 +8,6 @@
     <string name="send_button_text">Send</string>
     <string name="default_message">Hello world!</string>
     <string name="title_activity_camera">CameraActivity</string>
-<<<<<<< HEAD
     <string name="take_photo_text">Photo</string>
     <string name="record_text">Record</string>
     <string name="play_text">Play</string>
@@ -24,9 +23,7 @@
     <string name="app_dir">com.example.caris_wheelchair</string>
     <string name="title_activity_integrated">IntegratedActivity</string>
     <string name="open_integrated_text">Integrated</string>
-=======
     <string name="title_activity_imu_data_collection">IMU_data_collection</string>
     <string name="IMU_instruction_2">1. Toggle \'<i>IMU Data Collection</i>\' switch to enable/disable data collection for a single batch \n2. Click the \'<i>New Batch</i>\' button to save the current data batch and start collecting a new batch</string>
 
->>>>>>> austin/IMU_dev
 </resources>
