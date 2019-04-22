@@ -7,7 +7,7 @@
 
 ### To-Do:
 
-#### Image
+#### Image Processing
 
 1. Improve sampling rate (currently only 1s)
 2. Optimize image resolution while maintaining high sampling rate
