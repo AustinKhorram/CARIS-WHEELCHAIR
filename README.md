@@ -9,6 +9,10 @@ See April 2019 report for in depth discussion of the current project status.
 
 ### To-Do:
 
+#### App
+
+1. UI overhaul in integrated Activity
+
 #### Image Processing
 
 1. Improve sampling rate (currently only 1s)
