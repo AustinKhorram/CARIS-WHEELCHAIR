@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
         String user = editText.getText().toString();
         intent.putExtra(EXTRA_MESSAGE, user);
         startActivity(intent);
-
     }
+<<<<<<< HEAD
 
     /**Called when user taps the Send button on the username field**/
     public void useCamera(View view) {
@@ -53,4 +53,12 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, IntegratedActivity.class);
         startActivity(intent);
     }
+=======
+    /**called when user taps "IMU" button on main activity**/
+    public void startIMU(View view){
+        Intent intent = new Intent(MainActivity.this, IMUCapture.class);
+        startActivity(intent);
+    }
+
+>>>>>>> austin/IMU_dev
 }
