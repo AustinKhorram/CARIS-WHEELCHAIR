@@ -7,16 +7,24 @@
 
 ### To-Do:
 
-#### Image Processing
+#### Image
+
+1. Improve sampling rate (currently only 1s)
+2. Optimize image resolution while maintaining high sampling rate
 
 #### Audio Processing
 
-1. Allow relative file locations
-2. Implement as functions
-3. Train learning algorithms
+1. Optimize encoding and sampling rate
+2. Choose a better file format
+
+#### IMU Processing
+
+1. Significantly improve sampling rate
 
 #### Machine Learning
 
-#### App Development
+1. Implement outline data pipeline for training algorithms
 
 #### Integration
+
+1. Still far off
